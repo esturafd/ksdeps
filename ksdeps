@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# modify the routes according to your need
+USER=esturafd
+DEPENDENCY_FILE_NAME=kls-classpath
+KOTLIN_STDLIB=/home/$USER/.sdkman/candidates/kotlin/1.9.22/lib/kotlin-stdlib.jar
+ANNOTATION_DEP=/home/$USER/.ksdeps/kscript-annotations-1.5.0.jar
+
+OUTPUT=$(kscript --dependencies "$1" 2>&1)
+INIT_LINE=$(echo "$OUTPUT" | grep -n Dependencies: | cut -d ':' -f 1)
+SCRIPT_DEPENDENCIES=$(echo "$OUTPUT" | sed "1,${INIT_LINE}d" | sed -z 's/\n$//' | tr '\n' ':')
+ENV_DEPENDENCIES=$(echo -e "${KOTLIN_STDLIB}\n${ANNOTATION_DEP}\n${SCRIPT_DEPENDENCIES}" | sed -z 's/\n$//' | tr '\n' ':')
+
+echo -e "#!/bin/bash\n\necho '$ENV_DEPENDENCIES'" > $DEPENDENCY_FILE_NAME
+chmod +x $DEPENDENCY_FILE_NAME
